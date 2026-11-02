@@ -95,4 +95,46 @@ class ProductController extends AbstractController
         return $this->json(['message' => 'Produit supprimé avec succès']);
     }
 
+    // ==========================================
+    // 4. UPDATE - Mettre à jour un produit
+    // ==========================================
+    // #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
+    public function update(Product $product, Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        // 1. On récupère les données envoyée par le front-end (équivalent de req.body en Express)
+        $data = json_decode($request->getContent(), true);
+
+        // 2. On met à jour les propriétés du produit si elles sont présentes dans la requête
+        // L'opérateur ?? (null coalescing) ou isset() permet de gérer les mises à jour partielles (PATCH)
+        if (isset($data['name'])) {
+            $product->setName($data['name']);
+        }
+        // array_key_exist vérifie si la clé existe dans le tableau
+        if (array_key_exists('description', $data)){
+            $product->setDescription($data['description']); //vide la description si on envoie null
+        }
+        // issert sert à  vérifié si la clé existe et que sa valeur n'est pas null
+        if(isset($data['price'])){
+            $product->setPrice($data['price']);
+        }
+        if(isset($data['data'])){
+            $product->setStock($data['stock']);
+        }
+        if(isset($data['imageUrl'])){
+            $product->setImageUrl($data['imageUrl']);
+        }
+
+        // 3. PAS BESOIN de faire de $entityManager->persist($product) ici !
+        // EXplication juste en dessous 👇
+
+        // 4. On valide les changements en base de données
+        // `flush()` analyse les objets "suivis" par Doctrine, détecte les modifications et génère le SQL UPDATE.
+        $entityManager->flush();
+
+        return $this->json([
+            'message' => 'Produit mis à jour avec succès !',
+            'id' => $product->getId()
+        ]);
+    }
+
 }
