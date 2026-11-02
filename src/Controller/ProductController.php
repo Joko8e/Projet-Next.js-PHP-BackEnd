@@ -13,13 +13,13 @@ use Symfony\Component\Routing\Attribute\Route;
 // L'attribut #[Route] au niveau de la classe définit un préfixe d'URL.
 // Toutes les routes de ce contrôleur commenceront par /api/products
 // C'est l'équivalent de router.use('/api/products', productRouter) dans Express.
-// #[Route('/api/products', name: 'api_products_')]
+#[Route('/api/products', name: 'api_products_')]
 class ProductController extends AbstractController
 {
     // ==========================================
     // 1. READ - Récupérer la liste des produits
     // ==========================================
-    // #[Route('', name: 'index', methods: ['GET'])]
+    #[Route('', name: 'index', methods: ['GET'])]
     public function index(ProductRepository $productRepository): JsonResponse
     {
         // ProductRepository est un service fourni par Doctrine pour faire des requêtes SELECT (comme Model.find() en Mongoose)
@@ -54,11 +54,16 @@ class ProductController extends AbstractController
         // On décode le JSON brut envoyé par le front-end Next.js
         $data = json_decode($request->getContent(), true);
 
+        // Si le JSON est mal formé ou vide
+        if ($data === null) {
+            return $newResponse = new JsonResponse(['error' => 'Invalid JSON'], 400);
+        }
+
         // On instancie une nouvelle entité vide (équivalent de `new Product({...})` en Mongoose)
         $product = new Product();
         $product->setName($data['name'] ?? '');
         $product->setDescription($data['description'] ?? null);
-        $product->setPrice($data['price'] ?? 0);
+        $product->setPrice(isset($data['price']) ? (string) $data['price']:'0');
         $product->setStock($data['stock'] ?? 0);
         $product->setImageUrl($data['imageUrl'] ?? null);
         $product->setCreatedAt(new \DateTimeImmutable());
@@ -98,7 +103,7 @@ class ProductController extends AbstractController
     // ==========================================
     // 4. UPDATE - Mettre à jour un produit
     // ==========================================
-    // #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
+    #[Route('/{id}', name: 'update', methods: ['PUT', 'PATCH'])]
     public function update(Product $product, Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         // 1. On récupère les données envoyée par le front-end (équivalent de req.body en Express)
@@ -115,9 +120,9 @@ class ProductController extends AbstractController
         }
         // issert sert à  vérifié si la clé existe et que sa valeur n'est pas null
         if(isset($data['price'])){
-            $product->setPrice($data['price']);
+            $product->setPrice((string) $data['price']); // Conversion explicite en string
         }
-        if(isset($data['data'])){
+        if(isset($data['stock'])){
             $product->setStock($data['stock']);
         }
         if(isset($data['imageUrl'])){

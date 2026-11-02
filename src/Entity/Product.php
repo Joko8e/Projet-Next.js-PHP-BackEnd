@@ -26,7 +26,7 @@ class Product
     #[ORM\Column]
     private ?int $stock = null;
 
-    #[ORM\Column(length: 500)]
+    #[ORM\Column(length: 500, nullable:true)]
     private ?string $imageUrl = null;
 
     #[ORM\Column]
@@ -57,7 +57,7 @@ class Product
         return $this->description;
     }
 
-    public function setDescription(string $description): static
+    public function setDescription(?string $description): static
     {
         $this->description = $description;
 
@@ -69,9 +69,9 @@ class Product
         return $this->price;
     }
 
-    public function setPrice(string $price): static
+    public function setPrice(string|int|float $price): static
     {
-        $this->price = $price;
+        $this->price = (string) $price;
 
         return $this;
     }
@@ -93,7 +93,7 @@ class Product
         return $this->imageUrl;
     }
 
-    public function setImageUrl(string $imageUrl): static
+    public function setImageUrl(?string $imageUrl): static
     {
         $this->imageUrl = $imageUrl;
 
