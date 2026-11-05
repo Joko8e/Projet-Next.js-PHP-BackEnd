@@ -42,11 +42,10 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 COPY . .
 
 # Terminer l'autoloader Composer et exécuter les migrations Doctrine automatiquement
-RUN composer dump-autoload --optimize --classmap-authoritative && \
-    php bin/console doctrine:migrations:migrate --no-interaction
+RUN composer dump-autoload --optimize --classmap-authoritative
 
 # Ajuster les permissions pour le serveur web
 RUN chown -R www-data:www-data /var/www/html/var /var/www/html/public
 
 # Lancer Apache en premier plan
-CMD ["apache2-foreground"]
+CMD php bin/console doctrine:migrations:migrate --no-interaction && apache2-foreground
