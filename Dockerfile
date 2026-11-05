@@ -14,8 +14,7 @@ RUN a2enmod rewrite
 # Rediriger la racine web d'Apache vers le dossier public/ de Symfony
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
-RUN apt-get update && apt-get install -y libpq-dev && \
-    docker-php-ext-install pdo pdo_pgsql
+
 # Autoriser le .htaccess d'Apache
 RUN echo '<Directory /var/www/html/public>\n\
     Options Indexes FollowSymLinks\n\
@@ -27,8 +26,15 @@ a2enconf symfony
 # Configurer Apache pour écouter sur le port 10000 (requis par Render)
 RUN sed -i 's/80/10000/g' /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf
 
+
 # Définir le dossier de travail
 WORKDIR /var/www/html
+
+# Exemple à insérer dans ton Dockerfile avant le démarrage
+RUN php bin/console doctrine:migrations:migrate --no-inspection --no-interaction
+
+# Lancer Apache en premier plan
+CMD ["apache2-foreground"]
 
 # Copier les fichiers du projet dans le conteneur
 COPY . .
