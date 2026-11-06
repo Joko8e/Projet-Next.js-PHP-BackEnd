@@ -44,8 +44,9 @@ COPY . .
 # Terminer l'autoloader Composer et exécuter les migrations Doctrine automatiquement
 RUN composer dump-autoload --optimize --classmap-authoritative
 
-# Ajuster les permissions pour le serveur web
-RUN chown -R www-data:www-data /var/www/html/var /var/www/html/public
+# Ajuster les permissions et s'assurer que le dossier var/ existe
+RUN mkdir -p /var/www/html/var/cache /var/www/html/var/log && \
+    chown -R www-data:www-data /var/www/html/var /var/www/html/public
 
 # Lancer Apache en premier plan
 CMD php bin/console doctrine:migrations:migrate --no-interaction && apache2-foreground
